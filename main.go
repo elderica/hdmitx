@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	SCREEN_WIDTH  = 1920
-	SCREEN_HEIGHT = 1080
+	ScreenWidth  = 1920
+	ScreenHeight = 1080
 )
 
 var (
@@ -30,18 +30,18 @@ func (g *Game) Update() error {
 
 func (g *Game) Draw(screen *ebiten.Image) {
 	screen.Fill(backgroundColor)
-	for y := 0; y < SCREEN_HEIGHT; y += 2 {
-		ebitenutil.DrawLine(screen, 0, float64(y), SCREEN_WIDTH, float64(y), lineColor)
+	for y := 0; y < ScreenHeight; y += 2 {
+		ebitenutil.DrawLine(screen, 0, float64(y), ScreenWidth, float64(y), lineColor)
 	}
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
-	return SCREEN_WIDTH, SCREEN_HEIGHT
+	return ScreenWidth, ScreenHeight
 }
 
 func main() {
 	ebiten.SetWindowTitle("hdmitx")
-	ebiten.SetWindowSize(SCREEN_WIDTH, SCREEN_HEIGHT)
+	ebiten.SetWindowSize(ScreenWidth, ScreenHeight)
 	ebiten.SetFullscreen(true)
 	ebiten.SetVsyncEnabled(true)
 
