@@ -43,9 +43,7 @@ func main() {
 	ebiten.SetWindowTitle("hdmitx")
 	ebiten.SetWindowSize(ScreenWidth, ScreenHeight)
 	ebiten.SetFullscreen(true)
-	ebiten.SetVsyncEnabled(true)
-
-	log.Printf("VSync: %v", ebiten.IsVsyncEnabled())
+	ebiten.SetFPSMode(ebiten.FPSModeVsyncOn)
 
 	if err := ebiten.RunGame(NewGame()); err != nil {
 		log.Fatal(err)
