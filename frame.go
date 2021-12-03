@@ -18,6 +18,7 @@ func MakeFrames(bindata []byte) []Frame {
 	data := DatumEncode(bindata)
 
 	frames := make([]Frame, 0, 10)
+	rawNumbering := uint16(0)
 	for fi := 0; len(data) > 0; fi++ {
 		frames = append(frames, Frame{})
 		frame := frames[fi][:]
@@ -34,9 +35,9 @@ func MakeFrames(bindata []byte) []Frame {
 		frame[5] = byte(size & 0x000000ff)
 
 		// numbering(24ビット幅)を書きこむ。
-		rawNumbering := uint16(0)
 		numbering := EncodeNumbering(rawNumbering)
 		copy(frame[6:9], numbering)
+		rawNumbering = (rawNumbering + 1) % (MaxRawNumbering + 1)
 
 		dataFront, dataBack := SplitByteUpto(data, MaxDataSize)
 		copy(frame[9:], dataFront)
