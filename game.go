@@ -2,6 +2,8 @@ package main
 
 import (
 	"image/color"
+	"log"
+	"os"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
@@ -17,20 +19,48 @@ var (
 	lineColor       = color.Black
 )
 
-type Game struct{}
+type Game struct {
+	frames     []Frame
+	frameindex int
+}
 
-func NewGame() *Game {
-	return &Game{}
+func NewGame(filename string) *Game {
+	payload, err := os.ReadFile(filename)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	frames := MakeFrames(payload)
+
+	log.Println(frames)
+
+	return &Game{
+		frames:     frames,
+		frameindex: 0,
+	}
 }
 
 func (g *Game) Update() error {
+	d := len(g.frames)
+	g.frameindex = (g.frameindex + 1) % d
 	return nil
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
 	screen.Fill(backgroundColor)
-	for y := 0; y < ScreenHeight; y += 2 {
-		ebitenutil.DrawLine(screen, 0, float64(y), ScreenWidth, float64(y), lineColor)
+	// for y := 0; y < ScreenHeight; y += 2 {
+	// 	ebitenutil.DrawLine(screen, 0, float64(y), ScreenWidth, float64(y), lineColor)
+	// }
+
+	frame := g.frames[g.frameindex]
+
+	for j, b := range frame {
+		for i := 7; i >= 0; i-- {
+			if (b & (1 << i)) != 0 {
+				y := 8*j + i
+				ebitenutil.DrawLine(screen, 0, float64(y), ScreenWidth, float64(y), lineColor)
+			}
+		}
 	}
 }
 

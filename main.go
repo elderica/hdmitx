@@ -4,6 +4,8 @@ import (
 	"flag"
 	"log"
 	"os"
+
+	"github.com/hajimehoshi/ebiten/v2"
 )
 
 var (
@@ -15,8 +17,15 @@ func init() {
 }
 
 func fileExists(filename string) bool {
-	_, err := os.Stat(filename)
-	return err == nil
+	fileinfo, err := os.Stat(filename)
+	if err != nil {
+		return false
+	}
+	if fileinfo.IsDir() {
+		return false
+	}
+
+	return true
 }
 
 func parseFlags() {
@@ -36,12 +45,12 @@ func parseFlags() {
 func main() {
 	parseFlags()
 
-	// ebiten.SetWindowTitle("hdmitx")
-	// ebiten.SetWindowSize(ScreenWidth, ScreenHeight)
-	// ebiten.SetFullscreen(true)
-	// ebiten.SetFPSMode(ebiten.FPSModeVsyncOn)
+	ebiten.SetWindowTitle("hdmitx")
+	ebiten.SetWindowSize(ScreenWidth, ScreenHeight)
+	ebiten.SetFullscreen(true)
+	ebiten.SetFPSMode(ebiten.FPSModeVsyncOn)
 
-	// if err := ebiten.RunGame(NewGame()); err != nil {
-	// 	log.Fatal(err)
-	// }
+	if err := ebiten.RunGame(NewGame(flagsourcefile)); err != nil {
+		log.Fatal(err)
+	}
 }

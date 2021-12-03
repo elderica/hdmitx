@@ -60,13 +60,6 @@ func TestDatumEncode(t *testing.T) {
 				0, 0, 1, 0, 0, 1,
 			},
 		},
-		{
-			[]byte{1, 0, 2},
-			[]byte{
-				0x75, 0x0c, 0x01,
-				0x9f, 0x14, 0x01,
-			},
-		},
 	}
 
 	for _, test := range tests {

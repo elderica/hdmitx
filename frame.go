@@ -1,9 +1,12 @@
 package main
 
 const (
-	MaxFileSize            = 0xff_ff_ff // fly_by_wireプロトコルで送信可能な最大サイズ
-	MaxRawNumbering        = 0xf_ff     // numberingのdatumペイロード部の最大値
-	MaxPayloadSizePerFrame = 63         // 画像単位ひとつで運べるペイロードサイズ
+	MaxPayloadSize  = 0xff_ff_ff // fly_by_wireプロトコルで送信可能な最大サイズ
+	MaxRawNumbering = 0xf_ff     // numberingのdatumペイロード部の最大値
+
+	MaxNDatum              = 42              // 画像単位ひとつに載せられるdatumの個数
+	MaxDataSize            = 3 * MaxNDatum   // 画像単位のdataの長さ
+	MaxPayloadSizePerFrame = MaxDataSize / 2 // 画像単位ひとつで運べるペイロードサイズ
 )
 
 // Frame は1080ビット(135バイト)から成る画像単位である。
@@ -12,25 +15,45 @@ type Frame [135]byte
 
 // MakeFrames はバイナリデータから画像単位を作る関数である。
 func MakeFrames(bindata []byte) []Frame {
-	// TODO: 2つ以上の画像単位に対応する。
-	frames := make([]Frame, 1)
-	frame := frames[0][:]
+	data := DatumEncode(bindata)
 
-	// プリアンブルと予約領域を書きこむ。
-	frame[0] = 0b1010_1010
-	frame[1] = 0b1000_0000
-	frame[2] = 0b0000_0000
+	frames := make([]Frame, 0, 10)
+	for fi := 0; len(data) > 0; fi++ {
+		frames = append(frames, Frame{})
+		frame := frames[fi][:]
+
+		// プリアンブルと予約領域を書きこむ。
+		frame[0] = 0b1010_1010
+		frame[1] = 0b1000_0000
+		frame[2] = 0b0000_0000
+
+		// size(24ビット幅)を書きこむ。
+		size := uint32(len(bindata))
+		frame[3] = byte((size & 0x00ff0000) >> 16)
+		frame[4] = byte((size & 0x0000ff00) >> 8)
+		frame[5] = byte(size & 0x000000ff)
+
+		// numbering(24ビット幅)を書きこむ。
+		rawNumbering := uint16(0)
+		numbering := EncodeNumbering(rawNumbering)
+		copy(frame[6:9], numbering)
+
+		dataFront, dataBack := SplitByteUpto(data, MaxDataSize)
+		copy(frame[9:], dataFront)
+
+		data = dataBack
+	}
 
 	return frames
 }
 
 func EncodeNumbering(rawNumbering uint16) []byte {
-	rawNumbering %= MaxRawNumbering
+	rawNumbering %= MaxRawNumbering + 1
 	datum := DatumEncodeWord(rawNumbering)
 	numbering := make([]byte, 3)
 	numbering[0] = byte((datum & 0x00ff0000) >> 16)
-	numbering[1] = byte((datum & 0x0000ff00) >> 16)
-	numbering[2] = byte((datum & 0x000000ff) >> 16)
+	numbering[1] = byte((datum & 0x0000ff00) >> 8)
+	numbering[2] = byte(datum & 0x000000ff)
 	return numbering
 }
 
