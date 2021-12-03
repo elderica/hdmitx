@@ -29,10 +29,12 @@ func NewGame(filename string) *Game {
 	if err != nil {
 		log.Fatalln(err)
 	}
+	log.Printf("payload size: %d\n", len(payload))
 
 	frames := MakeFrames(payload)
 
-	log.Println(frames)
+	log.Printf("len(frames) = %d\n", len(frames))
+	//log.Printf("frames: %v\n", frames)
 
 	return &Game{
 		frames:     frames,
